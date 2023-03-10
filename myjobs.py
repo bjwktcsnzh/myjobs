@@ -26,6 +26,7 @@ def _log(msg, level="INFO"):
 def _notify(**kwargs):
     _log("notify : " + str(kwargs))
     n = Notify()
+    n.application_name = "myjobs.py"
     if kwargs.get("title") is not None:
         n.title = kwargs["title"]
     if kwargs.get("icon") is not None:
@@ -48,7 +49,7 @@ def _download(url: str) -> str:
 bilibili_live_room_status = {}
 
 
-async def check_bilibili_live():  # bilibili开播提醒
+async def job_check_bilibili_live():  # bilibili开播提醒
     async def checkRoom(_id):
         old_status = bilibili_live_room_status.get(_id)
         if old_status is None:
@@ -74,9 +75,12 @@ async def check_bilibili_live():  # bilibili开播提醒
             _log(info["anchor_info"]["base_info"]["uname"] + " 停播了")
 
     for r in [
+        7531557,  # 未明子
         11178526,  # 张正午
+        26671817,  # 主义主义工益_Official
+        8554748,  # 五年四班劳动委员
         # 650, #一米八的坤儿
-        # 26998291,  # 鼠鼠文学，用于测试
+        # 26998291,  # 鼠鼠文学
     ]:
         await checkRoom(r)
     # _log("Check bilibili live complete . bilibili_live_room_status=" + str(bilibili_live_room_status))
@@ -91,7 +95,7 @@ if __name__ == "__main__":
     schedule.every(4).hours.do(lambda: _log("I'm working..."))
     schedule.every().day.at("20:30").do(lambda: _notify(title="写日志"))
 
-    schedule.every(60).seconds.do(lambda: sync(check_bilibili_live()))
+    schedule.every(60).seconds.do(lambda: sync(job_check_bilibili_live()))
 
 
     def workday_job(at, func: Callable):
@@ -104,6 +108,11 @@ if __name__ == "__main__":
 
     workday_job("11:25", lambda: _notify(title="吃饭"))
 
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    except:
+        _notify(
+            title="出错了！！！！"
+        )
